@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { onRequest} from "firebase-functions/v2/https";
-import { signup, login } from "./src/users";
+import { signup, login } from "./src/users.js";
 
 const app = express();
 app.use(cors()); // allows access from other domains

@@ -1,5 +1,6 @@
-import { response } from "express";
-import { db } from "./dbConnect";
+import  jwt from "jsonwebtoken";
+import { db } from "./dbConnect.js";
+import { secret } from "../creds.js";
 
 const coll = db.collection('users')
 
@@ -19,10 +20,13 @@ export async function login (req, res) {
   const {email, password} = req.body
   let user = await coll.findOne({email: email.toLowerCase(), password})
   delete user.password // strip out password
+  const token = jwt.sign(user, secret)
+  res.send({user, token})
   //TODO: create token and send with user below
+  
 }
 
-res.send()
+
 
 //TODO: login
 
