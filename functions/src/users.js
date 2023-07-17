@@ -1,5 +1,6 @@
 import  jwt from "jsonwebtoken";
 import { db } from "./dbConnect.js";
+import { ObjectId } from "mongodb";
 import { secret } from "../creds.js";
 
 const coll = db.collection('users')
@@ -16,6 +17,7 @@ export async function signup (req, res) {
   login(req, res)
 }
 
+//TODO: login
 export async function login (req, res) {
   const {email, password} = req.body
   let user = await coll.findOne({email: email.toLowerCase(), password})
@@ -27,10 +29,16 @@ export async function login (req, res) {
 }
 
 
-
-//TODO: login
-
 // TODO: getprofile
-
+export async function getProfile(req, res){
+  //make sure the user has sent and auth toke (JWT)
+  if(!req.headers || !req.headers.authorization){
+    res.status(401).send({message: "Not authorized"})
+    return 
+  }
+   const decoded = jwt.verify(req.headers.authorization, secret)
+   const user = await coll.findOne({_id: new ObjectId(decoded._id)})
+   res.send({user})
+}
 
 //TODO: editProfile
