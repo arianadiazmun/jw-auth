@@ -1,7 +1,8 @@
 import  jwt from "jsonwebtoken";
 import { db } from "./dbConnect.js";
 import { ObjectId } from "mongodb";
-import { secret } from "../creds.js";
+import { secret, salt } from "../creds.js";
+import { hash } from "bcrypt";
 
 const coll = db.collection('users')
 
@@ -9,18 +10,22 @@ export async function signup (req, res) {
   const {email, password} = req.body
   //bad to store password in plain text, but we'll deal with it later
   //TODO: hash passwords
-  await coll.insertOne({email: email.toLowerCase(), password})
-
-
+  const hashedPassword = await hash(password, salt)
+  await coll.insertOne({email: email.toLowerCase(), password: hashedPassword})
   //note: not checking if email already exists or doing any validation
-
   login(req, res)
 }
 
 //TODO: login
 export async function login (req, res) {
   const {email, password} = req.body
-  let user = await coll.findOne({email: email.toLowerCase(), password})
+  const hashedPassword = await hash (password, salt )
+  let user = await coll.findOne({email: email.toLowerCase(), password: hashedPassword})
+if(!user) {
+  res.status(401).send({message: 'Invalid email or password.'})
+  return
+}
+
   delete user.password // strip out password
   const token = jwt.sign(user, secret)
   res.send({user, token})
